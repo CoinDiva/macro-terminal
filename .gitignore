@@ -1,0 +1,31 @@
+# ── SECRETS — NEVER COMMIT ────────────────────────────────────
+secrets.json
+config.js
+.env
+*.pem
+*.key
+
+# ── OS / editor ───────────────────────────────────────────────
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ── Local scratch ─────────────────────────────────────────────
+diag_feeds.py
+Screenshot*.png
+
+# ── Private screenshots — these show browser chrome, personal
+#    bookmark folders, and working notes. Not for a public repo.
+#    docs_dashboard.jpg is the cropped, clean version that IS published.
+BETHSDASH.jpg
+FINALMACRODASHBETH.jpg
+mymacrotradinginfo.jpg
+mustaddonmacro.jpg
+mygoldentix.png

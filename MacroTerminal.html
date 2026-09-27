@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COINDIVA MACRO TERMINAL</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060b18;--panel:#0a1020;--panel2:#0c1226;
+  --border:#162038;--border2:#1e2f50;
+  --text:#c8d0e8;--dim:#6b7a9e;--dim2:#4a5670;
+  --gold:#c9a84c;--green:#00d97e;--red:#ff4455;
+  --orange:#f5a623;--blue:#4a7dff;--purple:#7b68ee;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Courier New',Consolas,monospace;background:var(--bg);color:var(--text);font-size:12px;line-height:1.4;display:flex;flex-direction:column}
+#hdr{background:#080d1c;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:46px;flex-shrink:0}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-hex{color:var(--blue);font-size:22px;line-height:1}
+.logo-text .top{font-size:8px;letter-spacing:2.5px;color:var(--dim);text-transform:uppercase}
+.logo-text .main{font-size:16px;font-weight:900;letter-spacing:3px;color:var(--text)}
+.logo-text .main span{color:var(--blue)}
+.sess-pills{display:flex;gap:5px;align-items:center}
+.pill{font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:2px;border:1px solid}
+.pill-open{background:rgba(0,217,126,.12);border-color:var(--green);color:var(--green)}
+.pill-closed{background:rgba(107,122,158,.08);border-color:var(--border2);color:var(--dim)}
+.hdr-right{display:flex;align-items:center;gap:18px}
+.clock-block{text-align:center}
+.clock-label{font-size:8px;letter-spacing:1.5px;color:var(--dim);margin-bottom:1px}
+.clock-time{font-size:13px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:'Courier New',monospace}
+.live-ind{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--green)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+#ticker{background:#07101f;border-bottom:1px solid var(--border);height:28px;overflow:hidden;white-space:nowrap;flex-shrink:0}
+.ticker-track{display:inline-flex;align-items:center;height:28px;animation:scrolltk 80s linear infinite}
+.ticker-track:hover{animation-play-state:paused}
+@keyframes scrolltk{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ti{display:inline-flex;align-items:center;gap:5px;padding:0 16px;border-right:1px solid var(--border);font-size:10px;font-weight:600}
+.ti-name{color:var(--dim);letter-spacing:.5px}.ti-val{color:var(--text)}.ti-chg{font-size:9px;font-weight:700}
+.pos{color:var(--green)}.neg{color:var(--red)}
+#alert-bar{background:rgba(245,166,35,.07);border-bottom:1px solid rgba(245,166,35,.25);padding:5px 16px;font-size:10px;color:var(--orange);display:flex;align-items:center;gap:8px;flex-shrink:0}
+#alert-bar.hidden{display:none}
+#main{display:grid;grid-template-columns:285px 1fr 295px;flex:1;overflow:hidden;min-height:0}
+.col{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.col:last-child{border-right:none}
+.panel{border-bottom:1px solid var(--border);flex-shrink:0}
+.ph{background:var(--panel);padding:5px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.pt{font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--dim);display:flex;align-items:center;gap:6px}
+.pt::before{content:'◆';color:var(--blue);font-size:7px}
+.badge{font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:2px}
+.b-live{background:rgba(0,217,126,.12);color:var(--green);border:1px solid rgba(0,217,126,.25)}
+.b-bybit{background:rgba(74,125,255,.12);color:var(--blue);border:1px solid rgba(74,125,255,.25)}
+.b-delay{background:rgba(245,166,35,.12);color:var(--orange);border:1px solid rgba(245,166,35,.25)}
+.b-fred{background:rgba(107,122,158,.15);color:var(--dim);border:1px solid var(--border2)}
+.b-spot{background:rgba(107,122,158,.15);color:var(--dim);border:1px solid var(--border2)}
+.b-auto{background:rgba(74,125,255,.1);color:var(--blue);border:1px solid rgba(74,125,255,.2)}
+.b-awst{background:rgba(107,122,158,.15);color:var(--dim);border:1px solid var(--border2)}
+.upd{font-size:8px;color:var(--dim2)}
+.cr-row{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border)}
+.cr-row:last-child{border-bottom:none}
+.cr-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0}
+.ico-btc{background:rgba(247,147,26,.18);color:#f7931a}
+.ico-eth{background:rgba(98,126,234,.18);color:#627eea}
+.ico-sol{background:rgba(0,255,163,.15);color:#00ffa3}
+.ico-hype{background:rgba(74,125,255,.18);color:var(--blue)}
+.cr-info{flex:1;min-width:0}
+.cr-pair{font-size:11px;font-weight:700;color:var(--text)}
+.cr-name{font-size:8px;color:var(--dim)}
+.cr-right{text-align:right}
+.cr-usd{font-size:13px;font-weight:700;color:var(--text)}
+.cr-chg{font-size:9px;font-weight:700}
+.cr-fund{font-size:8px;color:var(--dim);margin-top:1px}
+.cr-footer{display:flex;justify-content:space-around;padding:6px 12px;background:var(--panel);border-top:1px solid var(--border)}
+.cr-stat-label{font-size:8px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase}
+.cr-stat-val{font-size:11px;font-weight:700;color:var(--text);margin-top:2px}
+.ms-row{padding:8px 12px;border-bottom:1px solid var(--border)}
+.ms-row:last-child{border-bottom:none}
+.ms-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.ms-name{font-size:11px;font-weight:700;color:var(--text)}
+.ms-bias{font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.5px}
+.ms-long{background:rgba(0,217,126,.15);color:var(--green)}
+.ms-short{background:rgba(255,68,85,.15);color:var(--red)}
+.ms-bar{display:flex;height:4px;border-radius:2px;overflow:hidden;margin-bottom:4px}
+.ms-bar-l{background:var(--green)}.ms-bar-s{background:var(--red)}
+.ms-meta{display:flex;justify-content:space-between;align-items:center;font-size:9px}
+.ms-pct-l{color:var(--green)}.ms-pct-s{color:var(--red)}.ms-fund{color:var(--dim)}
+.fng-body{display:flex;align-items:center;gap:14px;padding:12px}
+.fng-gauge{position:relative;width:100px;flex-shrink:0}
+.fng-gauge svg{display:block}
+.fng-overlay{position:absolute;bottom:0;left:50%;transform:translateX(-50%);text-align:center}
+.fng-num{font-size:24px;font-weight:900;line-height:1}
+.fng-side{flex:1}
+.fng-sentiment{font-size:15px;font-weight:700;margin-bottom:8px}
+.fng-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+.fng-lbl{color:var(--dim)}.fng-val{font-weight:600;color:var(--text)}
+.idx-grid{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border)}
+.idx-col{border-right:1px solid var(--border)}
+.idx-col:last-child{border-right:none}
+.idx-reg-hdr{font-size:8px;font-weight:700;letter-spacing:1.5px;color:var(--blue);padding:4px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;text-align:center}
+.idx-row{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--border);font-size:10px}
+.idx-row:last-child{border-bottom:none}
+.idx-name{color:var(--dim);flex:1;font-size:9px}
+.idx-val{font-weight:700;color:var(--text);min-width:60px;text-align:right;font-size:10px}
+.idx-chg{min-width:48px;text-align:right;font-size:9px;font-weight:700}
+.center-bottom{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0}
+.macro-panel{border-right:1px solid var(--border);overflow-y:auto}
+.commod-panel{overflow-y:auto}
+.macro-dxy-block{padding:12px}
+.macro-dxy-lbl{font-size:8px;letter-spacing:1.5px;color:var(--dim);margin-bottom:3px;text-transform:uppercase}
+.macro-dxy-val{font-size:30px;font-weight:900;color:var(--text);line-height:1}
+.macro-dxy-chg{font-size:11px;margin-top:4px;font-weight:600}
+.macro-rates{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)}
+.macro-rate-cell{padding:8px 12px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.macro-rate-cell:nth-child(2n){border-right:none}
+.macro-rate-label{font-size:8px;color:var(--dim);letter-spacing:.5px;margin-bottom:3px;text-transform:uppercase}
+.macro-rate-val{font-size:15px;font-weight:700;color:var(--text)}
+.macro-box{background:var(--panel);border:1px solid var(--border2);border-radius:3px;padding:8px 12px;margin:8px 12px}
+.macro-box-lbl{font-size:8px;color:var(--dim);letter-spacing:.5px;margin-bottom:4px;text-transform:uppercase}
+.macro-box-val{font-size:18px;font-weight:700}
+.macro-box-sub{font-size:9px;color:var(--dim);margin-top:3px}
+.macro-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border)}
+.macro-g3-cell{padding:8px 10px;border-right:1px solid var(--border);text-align:center}
+.macro-g3-cell:last-child{border-right:none}
+.macro-g3-lbl{font-size:8px;color:var(--dim);letter-spacing:.5px;margin-bottom:3px;text-transform:uppercase}
+.macro-g3-val{font-size:13px;font-weight:700;color:var(--text)}
+.commod-sec-hdr{font-size:8px;font-weight:700;letter-spacing:1px;color:var(--dim);padding:6px 12px;border-bottom:1px solid var(--border);text-transform:uppercase}
+.commod-row{display:flex;justify-content:space-between;align-items:center;padding:5px 12px;border-bottom:1px solid var(--border);font-size:11px}
+.commod-row:last-child{border-bottom:none}
+.commod-name{color:var(--dim)}.commod-price{font-weight:700;color:var(--text)}
+.feed-down .commod-name{color:#ff5c5c}
+.feed-down{background:rgba(255,60,60,.07)}
+.commod-chg{font-size:10px;font-weight:700;min-width:52px;text-align:right}
+.sess-grid{display:grid;grid-template-columns:1fr 1fr}
+.sess-cell{padding:10px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.sess-cell:nth-child(2n){border-right:none}
+.sess-cell:nth-last-child(-n+2){border-bottom:none}
+.sess-cell-name{font-size:8px;letter-spacing:1.5px;color:var(--dim);margin-bottom:4px;text-transform:uppercase}
+.sess-cell-time{font-size:18px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:'Courier New',monospace}
+.sess-cell-status{font-size:8px;font-weight:700;letter-spacing:1px;margin-top:3px}
+.sess-open-st{color:var(--green)}.sess-closed-st{color:var(--dim)}
+.news-tabs{display:flex;padding:0;border-bottom:1px solid var(--border)}
+.news-tab{flex:1;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--dim);padding:6px 0;cursor:pointer;border-bottom:2px solid transparent;text-transform:uppercase;transition:color .2s}
+.news-tab.active{color:var(--text);border-bottom-color:var(--blue)}
+.news-body{overflow-y:auto;flex:1}
+.news-item{padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.news-item:hover{background:rgba(74,125,255,.05)}
+.news-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.news-src{font-size:8px;font-weight:700;letter-spacing:.5px;color:var(--blue)}
+.news-time{font-size:8px;color:var(--dim)}
+.news-hl{font-size:10px;color:var(--text);line-height:1.4}
+.news-cat{font-size:7px;font-weight:700;letter-spacing:.5px;padding:1px 5px;border-radius:2px;margin-top:3px;display:inline-block}
+.cat-macro{background:rgba(245,166,35,.15);color:var(--orange)}
+.cat-crypto{background:rgba(0,217,126,.12);color:var(--green)}
+.cal-body{overflow-y:auto;flex:1}
+.cal-row{display:grid;grid-template-columns:42px 18px 1fr 50px 50px 12px;align-items:center;gap:6px;padding:5px 12px;border-bottom:1px solid var(--border);font-size:9px}
+.cal-row:last-child{border-bottom:none}
+.cal-time{color:var(--dim);font-size:8px}.cal-flag{font-size:10px}
+.cal-event{color:var(--text);font-size:9px}
+.cal-fc{text-align:right;color:var(--blue)}.cal-prev{text-align:right;color:var(--dim)}
+.cal-dot{width:7px;height:7px;border-radius:50%;margin:auto}
+.dot-high{background:var(--red)}.dot-med{background:var(--orange)}.dot-low{background:var(--dim)}
+.cal-more{padding:7px 12px;text-align:center;font-size:9px;color:var(--blue);font-weight:700;letter-spacing:.5px;cursor:pointer;border-top:1px solid var(--border)}
+#right-col{display:flex;flex-direction:column;overflow:hidden}
+.right-top{flex-shrink:0}
+.right-mid{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.right-bot{flex-shrink:0;max-height:240px;display:flex;flex-direction:column;border-top:1px solid var(--border)}
+#left-col{overflow-y:auto}
+#center-col{display:flex;flex-direction:column;overflow:hidden}
+.center-top{flex-shrink:0}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <div class="logo-wrap">
+    <div class="logo-hex">⬡</div>
+    <div class="logo-text">
+      <div class="top">COINDIVA INTELLIGENCE PILLAR</div>
+      <div class="main">MACRO <span>TERMINAL</span></div>
+    </div>
+  </div>
+  <div class="sess-pills" id="sess-pills"><span class="pill pill-closed">LOADING...</span></div>
+  <div class="hdr-right">
+    <div class="clock-block"><div class="clock-label">AWST</div><div class="clock-time" id="clk-awst">--:--:--</div></div>
+    <div class="clock-block"><div class="clock-label">UTC</div><div class="clock-time" id="clk-utc">--:--:--</div></div>
+    <div class="live-ind"><div class="live-dot"></div>LIVE</div>
+  </div>
+</div>
+
+<div id="ticker"><div class="ticker-track" id="ticker-track">
+  <div class="ti"><span class="ti-name">LOADING</span><span class="ti-val">—</span></div>
+</div></div>
+
+<div id="alert-bar" class="hidden"><span>⚡</span><span id="alert-text"></span></div>
+
+<div id="main">
+
+  <!-- LEFT -->
+  <div class="col" id="left-col">
+    <div class="panel">
+      <div class="ph"><span class="pt">CRYPTO COMMAND</span><span class="badge b-live">COINGECKO</span></div>
+      <div id="crypto-rows"></div>
+      <div class="cr-footer">
+        <div class="cr-stat"><div class="cr-stat-label">MKT CAP</div><div class="cr-stat-val" id="stat-mktcap">—</div></div>
+        <div class="cr-stat"><div class="cr-stat-label">BTC DOM</div><div class="cr-stat-val" id="stat-dom">—</div></div>
+        <div class="cr-stat"><div class="cr-stat-label">24H VOL</div><div class="cr-stat-val" id="stat-vol">—</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">MARKET STRUCTURE</span><span class="badge b-bybit">OKX PERPS</span></div>
+      <div id="ms-rows"></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">MARKET SENTIMENT</span><span class="badge b-live">CRYPTO F&amp;G</span></div>
+      <div class="fng-body">
+        <div class="fng-gauge">
+          <svg viewBox="0 0 100 58" xmlns="http://www.w3.org/2000/svg" width="100" height="58">
+            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#1e2f50" stroke-width="8" stroke-linecap="round"/>
+            <path id="fng-arc" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#6b7a9e" stroke-width="8" stroke-linecap="round" stroke-dasharray="0 126"/>
+            <line id="fng-needle" x1="50" y1="50" x2="50" y2="14" stroke="white" stroke-width="1.5" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+            <circle cx="50" cy="50" r="3" fill="white"/>
+          </svg>
+          <div class="fng-overlay"><div class="fng-num" id="fng-num">—</div></div>
+        </div>
+        <div class="fng-side">
+          <div class="fng-sentiment" id="fng-label">—</div>
+          <div class="fng-row"><span class="fng-lbl">Yesterday</span><span class="fng-val" id="fng-yesterday">—</span></div>
+          <div class="fng-row"><span class="fng-lbl">7D Avg</span><span class="fng-val" id="fng-7d">—</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- WHALE FLOW PANEL -->
+    <div class="panel" style="min-height:220px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden">
+      <div class="ph"><span class="pt">WHALE FLOW</span><span class="badge b-live">OKX PERPS</span></div>
+      <div style="padding:4px 8px;display:flex;gap:6px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="flex:1;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--dim)">BUY SIDE</div>
+        <div style="flex:1;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;color:var(--dim)">SELL SIDE</div>
+      </div>
+      <div style="padding:4px 8px;display:flex;gap:6px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="flex:1;text-align:center">
+          <div style="font-size:15px;font-weight:900;color:var(--green)" id="whale-buy-vol">—</div>
+          <div style="font-size:8px;color:var(--dim)">TOTAL BUY $</div>
+        </div>
+        <div style="flex:1;text-align:center">
+          <div style="font-size:15px;font-weight:900;color:var(--red)" id="whale-sell-vol">—</div>
+          <div style="font-size:8px;color:var(--dim)">TOTAL SELL $</div>
+        </div>
+      </div>
+      <div style="padding:4px 8px;border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="font-size:8px;color:var(--dim);margin-bottom:3px;letter-spacing:1px">NET FLOW BIAS</div>
+        <div id="whale-bias-bar" style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div id="whale-bias-fill" style="height:100%;width:50%;background:var(--green);border-radius:3px;transition:width .4s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:2px">
+          <div style="font-size:8px;color:var(--green)">BUY</div>
+          <div id="whale-bias-label" style="font-size:9px;font-weight:700;color:var(--text)">—</div>
+          <div style="font-size:8px;color:var(--red)">SELL</div>
+        </div>
+      </div>
+      <div style="font-size:8px;color:var(--dim);padding:3px 10px;letter-spacing:1px;border-bottom:1px solid var(--border);flex-shrink:0">LARGE TRADES &gt;$100K · LAST 500</div>
+      <div id="whale-rows" style="overflow-y:auto;flex:1"></div>
+      <div style="padding:3px 10px;font-size:8px;color:var(--dim2);border-top:1px solid var(--border);flex-shrink:0" id="whale-upd">—</div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="col" id="center-col">
+    <div class="panel center-top">
+      <div class="ph">
+        <span class="pt">GLOBAL INDICES</span>
+        <div style="display:flex;gap:8px;align-items:center"><span class="upd" id="idx-upd"></span><span class="badge b-delay">15-MIN DELAY</span></div>
+      </div>
+      <div class="idx-grid">
+        <div class="idx-col">
+          <div class="idx-reg-hdr">UNITED STATES</div>
+          <div id="idx-us"></div>
+        </div>
+        <div class="idx-col">
+          <div class="idx-reg-hdr">ASIA PACIFIC</div>
+          <div id="idx-asia"></div>
+        </div>
+        <div class="idx-col">
+          <div class="idx-reg-hdr">EUROPE</div>
+          <div id="idx-europe"></div>
+        </div>
+      </div>
+    </div>
+    <!-- FUTURES & WATCHLIST -->
+    <div class="panel" style="flex-shrink:0">
+      <div class="ph">
+        <span class="pt">FUTURES &amp; WATCHLIST</span>
+        <div style="display:flex;gap:8px;align-items:center"><span class="upd" id="watch-upd"></span><span class="badge b-delay">15-MIN DELAY</span></div>
+      </div>
+      <div class="idx-grid">
+        <div class="idx-col">
+          <div class="idx-reg-hdr">US FUTURES</div>
+          <div id="watch-futures"></div>
+        </div>
+        <div class="idx-col">
+          <div class="idx-reg-hdr">BONDS &amp; SECTORS</div>
+          <div id="watch-bonds"></div>
+        </div>
+        <div class="idx-col">
+          <div class="idx-reg-hdr">US STOCKS</div>
+          <div id="watch-stocks"></div>
+        </div>
+      </div>
+    </div>
+    <div class="center-bottom">
+      <div class="macro-panel">
+        <div class="ph"><span class="pt">MACRO INTELLIGENCE</span><span class="badge b-fred">FRED API</span></div>
+        <div class="macro-dxy-block">
+          <div class="macro-dxy-lbl">US DOLLAR INDEX (DXY)</div>
+          <div class="macro-dxy-val" id="dxy-val">—</div>
+          <div class="macro-dxy-chg" id="dxy-chg"></div>
+        </div>
+        <div class="macro-rates">
+          <div class="macro-rate-cell"><div class="macro-rate-label">FED FUNDS RATE</div><div class="macro-rate-val" id="fed-rate">—</div></div>
+          <div class="macro-rate-cell" style="border-right:none"><div class="macro-rate-label">2Y TREASURY</div><div class="macro-rate-val" id="yield-2y">—</div></div>
+          <div class="macro-rate-cell"><div class="macro-rate-label">10Y TREASURY</div><div class="macro-rate-val" id="yield-10y">—</div></div>
+          <div class="macro-rate-cell" style="border-right:none"><div class="macro-rate-label">YIELD SPREAD</div><div class="macro-rate-val" id="yield-spread">—</div></div>
+        </div>
+        <div class="macro-box">
+          <div class="macro-box-lbl">NEXT FOMC</div>
+          <div class="macro-box-val" style="color:var(--orange)" id="fomc-date">—</div>
+          <div class="macro-box-sub" id="fomc-days"></div>
+        </div>
+        <div class="macro-grid3">
+          <div class="macro-g3-cell"><div class="macro-g3-lbl">CPI YOY</div><div class="macro-g3-val" id="cpi">—</div></div>
+          <div class="macro-g3-cell"><div class="macro-g3-lbl">M2 SUPPLY</div><div class="macro-g3-val" id="m2">—</div></div>
+          <div class="macro-g3-cell"><div class="macro-g3-lbl">UNEMPLOYMENT</div><div class="macro-g3-val" id="unemp">—</div></div>
+        </div>
+      </div>
+      <div class="commod-panel">
+        <div class="ph"><span class="pt">COMMODITIES + FX</span><span class="badge b-spot">YAHOO</span></div>
+        <div class="commod-sec-hdr">COMMODITIES</div>
+        <div id="commod-rows"></div>
+        <div class="commod-sec-hdr" style="margin-top:2px">FX CROSSES</div>
+        <div id="fx-rows"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col" id="right-col">
+    <div class="panel right-top">
+      <div class="ph"><span class="pt">TRADING SESSIONS</span><span class="badge b-live">LIVE</span></div>
+      <div class="sess-grid" id="sess-grid">
+        <div class="sess-cell"><div class="sess-cell-name">TOKYO</div><div class="sess-cell-time" id="clk-tokyo">--:--</div><div class="sess-cell-status sess-closed-st" id="st-tokyo">—</div></div>
+        <div class="sess-cell"><div class="sess-cell-name">LONDON</div><div class="sess-cell-time" id="clk-london">--:--</div><div class="sess-cell-status sess-closed-st" id="st-london">—</div></div>
+        <div class="sess-cell"><div class="sess-cell-name">NEW YORK</div><div class="sess-cell-time" id="clk-ny">--:--</div><div class="sess-cell-status sess-closed-st" id="st-ny">—</div></div>
+        <div class="sess-cell"><div class="sess-cell-name">SYDNEY</div><div class="sess-cell-time" id="clk-sydney">--:--</div><div class="sess-cell-status sess-closed-st" id="st-sydney">—</div></div>
+      </div>
+    </div>
+    <div class="right-mid" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;border-bottom:1px solid var(--border)">
+      <div class="ph" style="flex-shrink:0"><span class="pt">INTELLIGENCE FEED</span><span class="badge b-auto">AUTO-REFRESH</span></div>
+      <div class="news-tabs">
+        <div class="news-tab active" onclick="switchNews('all',this)">ALL</div>
+        <div class="news-tab" onclick="switchNews('crypto',this)">CRYPTO</div>
+        <div class="news-tab" onclick="switchNews('macro',this)">MACRO</div>
+      </div>
+      <div class="news-body" id="news-body"></div>
+    </div>
+    <div class="right-bot">
+      <div class="ph" style="flex-shrink:0"><span class="pt">ECONOMIC CALENDAR</span><span class="badge b-awst">FOREXFACTORY</span></div>
+      <div class="cal-body" id="cal-body"></div>
+      <div class="cal-more" id="cal-more-btn">+ SHOW MORE EVENTS</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Keys are injected at runtime by server.py from gitignored secrets.json.
+     Never hardcode credentials in this file — it is a public repo. -->
+<script src="/config.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+//  COINDIVA MACRO TERMINAL — FULLY INDEPENDENT DATA LAYER
+//  Sources: CoinGecko · Binance · Bybit · Alternative.me · FRED
+//           Yahoo Finance · CryptoCompare · Reuters · ForexFactory
+// ══════════════════════════════════════════════════════════════
+
+const FRED_KEY    = window.CONFIG?.FRED_KEY    || '';
+const REUTERS_KEY = window.CONFIG?.REUTERS_KEY || '';
+const PROXY       = '/relay?url=';  // own server.py relay; corsproxy.io went key-only Sep 2026
+
+if (!window.CONFIG) {
+  console.error('config.js did not load — is server.py running on :8765? Opening this file directly with file:// will not work.');
+} else {
+  if (!FRED_KEY)    console.error('FRED_KEY missing from secrets.json — Macro Intelligence panel will be empty');
+  if (!REUTERS_KEY) console.warn('REUTERS_KEY missing from secrets.json — news falls back to RSS');
+}
+
+// FOMC 2026 schedule (hardcoded — public Federal Reserve calendar)
+const FOMC_DATES = ['2026-01-29','2026-03-19','2026-05-01','2026-06-17','2026-07-29','2026-09-16','2026-10-28','2026-12-09'];
+
+let allNews    = [];
+let calShown   = 5;
+let newsFilter = 'all';
+
+// ── CACHE (localStorage) ──────────────────────────────────────
+function getCached(key, maxMs) {
+  try {
+    const s = localStorage.getItem('mt2_'+key);
+    if (!s) return null;
+    const {ts, data} = JSON.parse(s);
+    if (Date.now()-ts > maxMs) return null;
+    return data;
+  } catch { return null; }
+}
+function setCache(key, data) {
+  try { localStorage.setItem('mt2_'+key, JSON.stringify({ts:Date.now(), data})); } catch {}
+}
+// Only return cached data if it has real content (not empty objects/arrays)
+
+function getCachedNonEmpty(key, maxMs) {
+  const d = getCached(key, maxMs);
+  if (!d) return null;
+  if (Array.isArray(d) && d.length === 0) return null;
+  if (typeof d === 'object' && !Array.isArray(d)) {
+    const vals = Object.values(d);
+    if (vals.length === 0) return null;
+    // For nested objects like {us:{},asia:{},europe:{}}, check if any sub-object has data
+    const hasData = vals.some(v => typeof v !== 'object' || Object.keys(v||{}).length > 0);
+    if (!hasData) return null;
+  }
+  return d;
+}
+
+// ── FETCH HELPERS ─────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function fetchJSON(url, timeoutMs=12000) {
+  const r = await fetch(url, {cache:'no-store', signal: AbortSignal.timeout(timeoutMs)});
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+function sanitizeJSON(text) {
+  return text.replace(/"([^"]+)":\s*([,}\]])/g, '"$1":null$2');
+}
+async function fetchViaProxy(url) {
+  try {
+    const r = await fetch(PROXY + url, {signal: AbortSignal.timeout(12000)});
+    if (!r.ok) throw new Error(r.status);
+    let text = await r.text();
+    if (!text || text.trim().startsWith('<')) throw new Error('HTML');
+    return JSON.parse(sanitizeJSON(text));
+  } catch { return null; }
+}
+
+// ── CLOCKS & SESSIONS ─────────────────────────────────────────
+function pad(n){return String(n).padStart(2,'0')}
+function fmtTime(tz,short=false){
+  const now=new Date();
+  try{
+    const opts={timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false};
+    if(!short) opts.second='2-digit';
+    return now.toLocaleTimeString('en-AU',opts);
+  }catch{return '--:--'}
+}
+function calcSessions() {
+  const now = new Date();
+  const utcH = now.getUTCHours();
+  const utcM = now.getUTCMinutes();
+  const utcTot = utcH*60+utcM;
+  // Approximate session windows in UTC minutes (not DST-adjusted but close)
+  return {
+    tokyo:    {label:'ASIA / TOKYO', open: utcTot>=0&&utcTot<540},
+    london:   {label:'LONDON',       open: utcTot>=480&&utcTot<990},
+    new_york: {label:'NEW YORK',     open: utcTot>=810&&utcTot<1260},
+    sydney:   {label:'SYDNEY',       open: utcTot>=0&&utcTot<420 || utcTot>=1320}
+  };
+}
+function updateClocks() {
+  const now = new Date();
+  document.getElementById('clk-awst').textContent   = fmtTime('Australia/Perth');
+  document.getElementById('clk-utc').textContent    = fmtTime('UTC');
+  document.getElementById('clk-tokyo').textContent  = fmtTime('Asia/Tokyo',true);
+  document.getElementById('clk-london').textContent = fmtTime('Europe/London',true);
+  document.getElementById('clk-ny').textContent     = fmtTime('America/New_York',true);
+  document.getElementById('clk-sydney').textContent = fmtTime('Australia/Sydney',true);
+
+  const sess = calcSessions();
+  const order = [['tokyo','st-tokyo'],['london','st-london'],['new_york','st-ny'],['sydney','st-sydney']];
+  order.forEach(([k,id])=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.textContent = sess[k].open ? 'OPEN' : 'CLOSED';
+    el.className   = 'sess-cell-status '+(sess[k].open?'sess-open-st':'sess-closed-st');
+  });
+  // Header pills
+  const pillOrder=[['tokyo','TOKYO'],['london','LONDON'],['new_york','NEW YORK'],['sydney','SYDNEY']];
+  const pillHtml = pillOrder.map(([k,lbl])=>{
+    const open=sess[k].open;
+    return`<span class="pill ${open?'pill-open':'pill-closed'}">${lbl} ${open?'OPEN':'CLOSED'}</span>`;
+  }).join('');
+  document.getElementById('sess-pills').innerHTML = pillHtml;
+}
+setInterval(updateClocks,1000);
+updateClocks();
+
+// ── FORMAT HELPERS ────────────────────────────────────────────
+function fmtN(n,d=2){if(n==null||isNaN(n))return'—';return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function fmtBig(n){
+  if(n==null)return'—';
+  if(n>=1e12)return'$'+(n/1e12).toFixed(2)+'T';
+  if(n>=1e9) return'$'+(n/1e9).toFixed(1)+'B';
+  return'$'+n.toFixed(0);
+}
+function chgHtml(v,sfx='%'){
+  if(v==null||isNaN(v))return'<span style="color:var(--dim)">—</span>';
+  const cls=v>=0?'pos':'neg';
+  return`<span class="${cls}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(2)}${sfx}</span>`;
+}
+function fmtChg(v){if(v==null)return'—';return(v>=0?'+':'')+v.toFixed(2)+'%'}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA FETCHERS
+// ══════════════════════════════════════════════════════════════
+
+// 1. CoinGecko — crypto prices (no API key, CORS enabled)
+async function fetchCrypto() {
+  const cached = getCached('crypto', 30*1000); // 30s cache
+  if (cached) return cached;
+  const [prices, global] = await Promise.all([
+    fetchJSON('http://localhost:8765/coingecko/api/v3/simple/price?ids=bitcoin,ethereum,solana,hyperliquid&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true'),
+    fetchJSON('http://localhost:8765/coingecko/api/v3/global')
+  ]);
+  const map = {bitcoin:'BTC',ethereum:'ETH',solana:'SOL',hyperliquid:'HYPE'};
+  const result = {};
+  Object.entries(map).forEach(([id,sym])=>{
+    const p = prices[id];
+    if (p) result[sym] = {price:p.usd, change_24h:p.usd_24h_change, market_cap:p.usd_market_cap, volume_24h:p.usd_24h_vol};
+  });
+  const out = {
+    prices: result,
+    global: {
+      btc_dominance: global.data.market_cap_percentage.btc,
+      total_market_cap: global.data.total_market_cap.usd,
+      total_volume_24h: global.data.total_volume.usd
+    }
+  };
+  setCache('crypto', out);
+  return out;
+}
+
+// 2. Alternative.me — Fear & Greed (no key, CORS enabled)
+async function fetchFnG() {
+  const cached = getCached('fng', 5*60*1000);
+  if (cached) return cached;
+  const d = await fetchJSON('https://api.alternative.me/fng/?limit=8');
+  const arr = d.data;
+  const vals = arr.map(x=>parseInt(x.value));
+  const result = {
+    value: vals[0],
+    label: arr[0].value_classification,
+    yesterday: vals[1] || vals[0],
+    avg_7d: Math.round(vals.reduce((s,v)=>s+v,0)/vals.length)
+  };
+  setCache('fng', result);
+  return result;
+}
+
+// 3. Market Structure — OKX for L/S ratio + funding rates (works from AU, no geo-block)
+//    OKX L/S: /api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC
+//    OKX FR:  /api/v5/public/funding-rate?instId=BTC-USDT-SWAP
+async function fetchMarketStructure() {
+  // OKX ccy codes for L/S, instId for funding rate
+  const coins = [
+    { short: 'BTC', ccy: 'BTC', instId: 'BTC-USDT-SWAP' },
+    { short: 'ETH', ccy: 'ETH', instId: 'ETH-USDT-SWAP' },
+    { short: 'SOL', ccy: 'SOL', instId: 'SOL-USDT-SWAP' },
+  ];
+  const ms = {};
+  await Promise.all(coins.map(async ({ short, ccy, instId }) => {
+    let longPct = 50, shortPct = 50, fundingRate = 0;
+    try {
+      // L/S ratio via OKX proxy
+      const lsRes = await fetchJSON(
+        `http://localhost:8765/okx/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=${ccy}&period=5m&limit=1`,
+        6000
+      );
+      if (lsRes && lsRes.code === '0' && Array.isArray(lsRes.data) && lsRes.data.length > 0) {
+        // data[0] = [timestamp, ratio]  where ratio = longAccounts / shortAccounts
+        const ratio = parseFloat(lsRes.data[0][1]);
+        longPct  = parseFloat(((ratio / (1 + ratio)) * 100).toFixed(1));
+        shortPct = parseFloat((100 - longPct).toFixed(1));
+      }
+    } catch {}
+    try {
+      // Funding rate via OKX proxy
+      const frRes = await fetchJSON(
+        `http://localhost:8765/okx/api/v5/public/funding-rate?instId=${instId}`,
+        6000
+      );
+      if (frRes && frRes.code === '0' && Array.isArray(frRes.data) && frRes.data.length > 0) {
+        fundingRate = parseFloat(frRes.data[0].fundingRate) * 100;
+      }
+    } catch {}
+    ms[short] = {
+      funding_rate: fundingRate,
+      long_pct:  longPct,
+      short_pct: shortPct,
+      bias: longPct > shortPct ? 'LONG' : 'SHORT'
+    };
+  }));
+  return ms;
+}
+
+// 4. OKX — funding rates for crypto rows (BTC/ETH/SOL/HYPE)
+async function fetchFundingRates() {
+  const instIds = ['BTC-USDT-SWAP','ETH-USDT-SWAP','SOL-USDT-SWAP','HYPE-USDT-SWAP'];
+  const rates = {};
+  await Promise.all(instIds.map(async instId => {
+    const key = instId.split('-')[0];
+    try {
+      const d = await fetchJSON(
+        `http://localhost:8765/okx/api/v5/public/funding-rate?instId=${instId}`,
+        6000
+      );
+      if (d && d.code === '0' && Array.isArray(d.data) && d.data.length > 0) {
+        rates[key] = parseFloat(d.data[0].fundingRate) * 100;
+      } else {
+        rates[key] = null;
+      }
+    } catch { rates[key] = null; }
+  }));
+  return rates;
+}
+
+// ── STOOQ — LOCAL SERVER PRIMARY, QUEUED CORSPROXY FALLBACK ──
+// When server.py is running: fast parallel calls via localhost (no CORS, no rate limit)
+// When server is down: falls back to a global serial queue on corsproxy.io
+
+// Global serial queue — ensures corsproxy fallback calls run one-at-a-time
+const _sq = []; let _sqRunning = false;
+function _enqueueStooq(sym) {
+  return new Promise(resolve => {
+    _sq.push({sym, resolve});
+    _runStooqQueue();
+  });
+}
+async function _runStooqQueue() {
+  if (_sqRunning) return;
+  _sqRunning = true;
+  while (_sq.length > 0) {
+    const {sym, resolve} = _sq.shift();
+    try {
+      const url = `https://stooq.com/q/l/?s=${sym}&f=sd2t2ohlcv&h&e=json`;
+      const r = await fetch(PROXY + url, {signal: AbortSignal.timeout(12000)});
+      if (!r.ok) { resolve(null); continue; }
+      const text = await r.text();
+      if (!text || text.trim().startsWith('<')) { resolve(null); continue; }
+      const d = JSON.parse(sanitizeJSON(text));
+      const s = d?.symbols?.[0];
+      const close = parseFloat(s?.Close ?? s?.close);
+      const open  = parseFloat(s?.Open  ?? s?.open);
+      if (!s || isNaN(close) || close <= 0) { resolve(null); continue; }
+      const chg = (open && !isNaN(open) && open > 0) ? ((close-open)/open*100) : 0;
+      resolve({price: close, change_pct: parseFloat(chg.toFixed(2))});
+    } catch { resolve(null); }
+    if (_sq.length > 0) await sleep(380); // rate limit gap for corsproxy
+  }
+  _sqRunning = false;
+}
+
+async function stooqQuote(sym) {
+  // Primary: local server proxy (fast, parallel-safe, no CORS)
+  try {
+    const r = await fetch(`http://localhost:8765/stooq?sym=${encodeURIComponent(sym)}`, {
+      signal: AbortSignal.timeout(9000)
+    });
+    if (r.ok) {
+      const text = await r.text();
+      const d = JSON.parse(sanitizeJSON(text));
+      if (d?.error) throw new Error(d.error);
+      const s = d?.symbols?.[0];
+      const close = parseFloat(s?.Close ?? s?.close);
+      const open  = parseFloat(s?.Open  ?? s?.open);
+      if (s && !isNaN(close) && close > 0) {
+        const chg = (open && !isNaN(open) && open > 0) ? ((close-open)/open*100) : 0;
+        return {price: close, change_pct: parseFloat(chg.toFixed(2))};
+      }
+    }
+  } catch {}
+  // Fallback: corsproxy via global serial queue
+  return _enqueueStooq(sym);
+}
+
+// stooqSerial now = parallel via local server (or serial fallback if server is down)
+async function stooqSerial(symbolMap) {
+  const entries = Object.entries(symbolMap);
+  const results = await Promise.allSettled(entries.map(([, sym]) => stooqQuote(sym)));
+  const out = {};
+  entries.forEach(([name], i) => {
+    const d = results[i].status === 'fulfilled' ? results[i].value : null;
+    if (d) out[name] = d;
+  });
+  return out;
+}
+
+// Yahoo Finance via local server — for symbols Stooq doesn't supply
+// ^N225 Nikkei, ^AXJO ASX, ^KS11 KOSPI, ^FTSE, ^STOXX50E, ^VIX
+async function yahooQuotes(symbols) {
+  // PRIMARY: local server proxy (fast, server-side, no CORS)
+  try {
+    const r = await fetch(`http://localhost:8765/yahoo?sym=${symbols.map(encodeURIComponent).join(',')}`, {
+      signal: AbortSignal.timeout(12000)
+    });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    if (Object.keys(data).length > 0) {
+      setCache('yahoo_last', data); // persist for fallback
+      return data;
+    }
+    throw new Error('empty response');
+  } catch {}
+
+  // FALLBACK: fetch each symbol individually via corsproxy.io -> Yahoo Finance
+  console.warn('Yahoo local proxy failed — using corsproxy.io fallback');
+  const result = {};
+  await Promise.allSettled(symbols.map(async sym => {
+    try {
+      const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?range=5d&interval=1d&includePrePost=false`;
+      const r = await fetch(PROXY + yUrl, { signal: AbortSignal.timeout(10000) });
+      if (!r.ok) return;
+      const d = await r.json();
+      const meta = d?.chart?.result?.[0]?.meta;
+      const price = meta?.regularMarketPrice || meta?.previousClose;
+      const prev  = meta?.chartPreviousClose || meta?.previousClose || price;
+      if (price) {
+        const chg = prev ? ((price - prev) / prev * 100) : 0;
+        result[sym] = { price: Math.round(price * 10000) / 10000, change_pct: Math.round(chg * 100) / 100 };
+      }
+    } catch {}
+  }));
+
+  if (Object.keys(result).length > 0) {
+    setCache('yahoo_last', result);
+    return result;
+  }
+
+  // LAST RESORT: return last known good values (up to 24h old) so display never goes blank
+  const lastKnown = getCached('yahoo_last', 24*60*60*1000);
+  if (lastKnown) { console.warn('Yahoo: using last-known cached values'); return lastKnown; }
+  return {};
+}
+
+// 5/6/7. All market data — YAHOO FINANCE, SINGLE SOURCE
+//
+// FIX (Jul 16 2026): Stooq previously supplied US indices, EU indices, commodities
+// and FX. Every one of those symbols returned nothing, so four panels rendered
+// blank while Yahoo/FRED/CoinGecko panels populated normally. Diagnosis was by
+// direct observation: 100% of Stooq-sourced fields empty, 100% of non-Stooq fields
+// present. Stooq is removed. Everything now routes through the /yahoo proxy, which
+// was already proven working on this machine for Asia + VIX + FTSE + STOXX.
+//
+// The old code swallowed all failures in bare `catch {}` blocks, which is why a
+// totally dead feed looked identical to "no data yet". Feed health is now tracked
+// and surfaced in the UI.
+
+const YF = {
+  us:     {'S&P 500':'^GSPC','NASDAQ':'^IXIC','Dow Jones':'^DJI','VIX':'^VIX'},
+  asia:   {'Nikkei 225':'^N225','Hang Seng':'^HSI','KOSPI':'^KS11'},
+  europe: {'FTSE 100':'^FTSE','DAX 40':'^GDAXI','CAC 40':'^FCHI','STOXX 50':'^STOXX50E'},
+  commod: {'Gold':'GC=F','Silver':'SI=F','WTI Crude':'CL=F','Brent Crude':'BZ=F','Copper':'HG=F','Natural Gas':'NG=F'},
+  fx:     {'AUD/USD':'AUDUSD=X','USD/JPY':'USDJPY=X','EUR/USD':'EURUSD=X','GBP/USD':'GBPUSD=X','DXY':'DX-Y.NYB'},
+};
+
+// Feed health — read by the renderers so a dead feed shows as DOWN, never blank
+let FEED_STATUS = {indices:'pending', commodities:'pending', fx:'pending'};
+
+// Map {displayName: yahooSymbol} -> {displayName: quote}, preserving key order
+function _mapYF(group, yh) {
+  const out = {};
+  for (const [name, sym] of Object.entries(group)) if (yh[sym]) out[name] = yh[sym];
+  return out;
+}
+
+async function fetchAllMarketData() {
+  const idxCached  = getCachedNonEmpty('indices',     2*60*1000);
+  const commCached = getCachedNonEmpty('commodities', 2*60*1000);
+  const fxCached   = getCachedNonEmpty('fx',          2*60*1000);
+  if (idxCached && commCached && fxCached) {
+    FEED_STATUS = {indices:'ok', commodities:'ok', fx:'ok'};
+    return {indices: idxCached, commodities: commCached, fx: fxCached};
+  }
+
+  // ONE batched request — server.py fans these out across parallel threads
+  const allSyms = [
+    ...Object.values(YF.us),     ...Object.values(YF.asia), ...Object.values(YF.europe),
+    ...Object.values(YF.commod), ...Object.values(YF.fx)
+  ];
+  let yh = {};
+  try {
+    yh = (await yahooQuotes(allSyms)) || {};
+  } catch(e) {
+    console.error('Yahoo batch failed:', e);
+  }
+  console.log(`Yahoo: ${Object.keys(yh).length}/${allSyms.length} symbols returned`);
+
+  const usIdx       = idxCached  ? idxCached.us     : _mapYF(YF.us,     yh);
+  const asiaIdx     = idxCached  ? idxCached.asia   : _mapYF(YF.asia,   yh);
+  const euIdx       = idxCached  ? idxCached.europe : _mapYF(YF.europe, yh);
+  const commodities = commCached ? commCached       : _mapYF(YF.commod, yh);
+  const fx          = fxCached   ? fxCached         : _mapYF(YF.fx,     yh);
+
+  // VIX fallback → FRED (kept: FRED is proven working on this box)
+  if (!idxCached && !usIdx['VIX']) {
+    try {
+      const d = await fetchJSON(`https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=${FRED_KEY}&limit=3&sort_order=desc&file_type=json`);
+      const obs = d?.observations?.filter(o => o.value !== '.') || [];
+      if (obs.length) {
+        const cur = parseFloat(obs[0].value);
+        const prv = obs.length > 1 ? parseFloat(obs[1].value) : cur;
+        usIdx['VIX'] = {price: cur, change_pct: parseFloat(((cur-prv)/prv*100).toFixed(2))};
+      }
+    } catch(e) { console.warn('VIX FRED fallback failed:', e); }
+  }
+
+  // DXY fallback → derive from EUR/USD. Approximation only, flagged as such.
+  if (!fxCached && !fx['DXY'] && fx['EUR/USD']?.price) {
+    fx['DXY'] = {
+      price: parseFloat((1/fx['EUR/USD'].price * 95.65).toFixed(3)),
+      change_pct: parseFloat((-(fx['EUR/USD'].change_pct||0)).toFixed(2)),
+      derived: true
+    };
+  }
+
+  FEED_STATUS.indices     = Object.keys(usIdx).length       ? 'ok' : 'down';
+  FEED_STATUS.commodities = Object.keys(commodities).length ? 'ok' : 'down';
+  FEED_STATUS.fx          = Object.keys(fx).length          ? 'ok' : 'down';
+
+  const indices = {us: usIdx, asia: asiaIdx, europe: euIdx};
+  if (!idxCached  && Object.keys(usIdx).length)        setCache('indices',     indices);
+  if (!commCached && Object.keys(commodities).length)  setCache('commodities', commodities);
+  if (!fxCached   && Object.keys(fx).length)           setCache('fx',          fx);
+
+  return {indices, commodities, fx};
+}
+
+async function fetchIndices()     { return (await fetchAllMarketData()).indices; }
+async function fetchCommodities() { return (await fetchAllMarketData()).commodities; }
+async function fetchFX()          { return (await fetchAllMarketData()).fx; }
+
+// 8. FRED API — macro data (cached 24h — data changes monthly)
+async function fetchMacro() {
+  const cached = getCached('macro', 24*60*60*1000);
+  if (cached) return cached;
+  const base = 'https://api.stlouisfed.org/fred/series/observations';
+  const qs   = `&api_key=${FRED_KEY}&limit=14&sort_order=desc&file_type=json`;
+  const fetchSeries = async (id) => {
+    const url = `${base}?series_id=${id}${qs}`;
+    let d = null;
+    try { d = await fetchJSON(url); } catch {}
+    if (!d?.observations) { try { d = await fetchViaProxy(url); } catch {} }
+    if (!d?.observations) throw new Error(`FRED ${id} failed`);
+    return d.observations.filter(o=>o.value!=='.').map(o=>({date:o.date,value:parseFloat(o.value)}));
+  };
+  try {
+    const [fedObs, dgs10Obs, dgs2Obs, cpiObs, m2Obs, unrObs] = await Promise.all([
+      fetchSeries('FEDFUNDS'),
+      fetchSeries('DGS10'),
+      fetchSeries('DGS2'),
+      fetchSeries('CPIAUCSL'),
+      fetchSeries('M2SL'),
+      fetchSeries('UNRATE')
+    ]);
+    const y10   = dgs10Obs[0]?.value;
+    const y2    = dgs2Obs[0]?.value;
+    const cpiNow= cpiObs[0]?.value;
+    const cpiYr = cpiObs[12]?.value || cpiObs[cpiObs.length-1]?.value;
+    const cpiYoY= cpiYr ? ((cpiNow-cpiYr)/cpiYr*100) : null;
+    const spread= (y10!=null&&y2!=null) ? y10-y2 : null;
+    const result = {
+      fed_rate:     fedObs[0]?.value,
+      yield_10y:    y10,
+      yield_2y:     y2,
+      yield_spread: spread,
+      yield_inverted: spread!=null && spread<0,
+      cpi_yoy:      cpiYoY,
+      m2_billions:  m2Obs[0]?.value,
+      unemployment: unrObs[0]?.value,
+    };
+    setCache('macro', result);
+    return result;
+  } catch(e) {
+    console.error('FRED fetch failed:', e);
+    return {};
+  }
+}
+
+// Helper — add news item to array
+function pushNewsItem(items, raw, source, category) {
+  const pubStr = raw.published || raw.publishedAt || raw.datePublished || raw.date || raw.pubDate || '';
+  const dt = pubStr ? new Date(pubStr) : new Date();
+  const headline = raw.headline || raw.altHeadline || raw.title || raw.name || '';
+  if (!headline || headline.length < 5) return;
+  items.push({
+    headline,
+    source,
+    url:      raw.webUrl || raw.url || raw.link || '#',
+    category: category || (headline.toLowerCase().match(/bitcoin|btc|crypto|eth|solana|defi|blockchain|altcoin/) ? 'crypto' : 'macro'),
+    time_awst: dt.toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour:'2-digit',minute:'2-digit',hour12:false}),
+    date_awst: dt.toLocaleDateString('en-AU',{timeZone:'Australia/Perth',day:'2-digit',month:'short'}),
+    ts: isNaN(dt.getTime()) ? Date.now() : dt.getTime()
+  });
+}
+
+// 9. News — Reuters · Messari · CryptoCompare · CoinDesk
+// Parse an RSS feed fetched via corsproxy.io fallback
+async function _parseRSSFallback(url, source, category) {
+  const r = await fetch(PROXY + url, { signal: AbortSignal.timeout(10000) });
+  if (!r.ok) throw new Error(r.status);
+  const text = await r.text();
+  const xml = new DOMParser().parseFromString(text, 'text/xml');
+  return [...xml.querySelectorAll('item')].slice(0, 20).map(item => {
+    const title   = item.querySelector('title')?.textContent?.trim() || '';
+    const link    = item.querySelector('link')?.textContent?.trim() || '#';
+    const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+    const ts      = pubDate ? new Date(pubDate).getTime() : Date.now();
+    const d       = new Date(ts);
+    return {
+      headline: title, source, url: link, category,
+      time_awst: d.toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour:'2-digit',minute:'2-digit',hour12:false}),
+      date_awst: d.toLocaleDateString('en-AU',{timeZone:'Australia/Perth',day:'2-digit',month:'short'}),
+      ts
+    };
+  }).filter(i => i.headline);
+}
+
+async function fetchNews() {
+  const cached = getCachedNonEmpty('news', 3*60*1000);
+  if (cached) return cached;
+  const items = [];
+  const seenHeadlines = new Set();
+
+  // --- SOURCE 1: Reuters via local Python proxy ---
+  try {
+    const r = await fetch('http://localhost:8765/reuters?q=bitcoin+crypto+federal+reserve+economy+markets&limit=40', {
+      signal: AbortSignal.timeout(10000)
+    });
+    if (r.ok) {
+      const d = await r.json();
+      let arr = [];
+      if (Array.isArray(d)) arr = d;
+      else if (Array.isArray(d.items))    arr = d.items;
+      else if (Array.isArray(d.articles)) arr = d.articles;
+      else if (Array.isArray(d.results))  arr = d.results;
+      else if (Array.isArray(d.data))     arr = d.data;
+      else if (d.wireItems && Array.isArray(d.wireItems)) arr = d.wireItems;
+      arr.slice(0,40).forEach(n => {
+        const headline = n.headline || n.altHeadline || n.title || n.name || '';
+        if (headline && !seenHeadlines.has(headline)) {
+          seenHeadlines.add(headline);
+          pushNewsItem(items, n, 'Reuters', null);
+        }
+      });
+    }
+  } catch(e) { console.warn('Reuters failed:', e?.message); }
+
+  // --- SOURCE 2: Multi-RSS via local server ---
+  try {
+    const r = await fetch('http://localhost:8765/news', {signal: AbortSignal.timeout(12000)});
+    if (r.ok) {
+      const rssItems = await r.json();
+      if (Array.isArray(rssItems)) {
+        rssItems.forEach(n => {
+          if (n.headline && !seenHeadlines.has(n.headline)) {
+            seenHeadlines.add(n.headline);
+            items.push(n);
+          }
+        });
+        console.log('RSS feeds loaded:', items.length, 'articles');
+      }
+    }
+  } catch(e) { console.warn('RSS news (local) failed:', e?.message); }
+
+  // --- SOURCE 3: Direct RSS fallback via corsproxy.io (kicks in when server is down) ---
+  if (items.length < 5) {
+    console.warn('News: local server down — fetching RSS direct via corsproxy.io');
+    const feeds = [
+      ['https://cointelegraph.com/rss',             'CoinTelegraph', 'crypto'],
+      ['https://decrypt.co/feed',                   'Decrypt',       'crypto'],
+      ['https://bitcoinmagazine.com/.rss/full/',    'Bitcoin Mag',   'crypto'],
+      ['https://www.marketwatch.com/rss/topstories','MarketWatch',   'macro'],
+    ];
+    await Promise.allSettled(feeds.map(async ([url, name, cat]) => {
+      try {
+        const rssItems = await _parseRSSFallback(url, name, cat);
+        rssItems.forEach(n => {
+          if (!seenHeadlines.has(n.headline)) {
+            seenHeadlines.add(n.headline);
+            items.push(n);
+          }
+        });
+      } catch(e) { console.warn(`RSS fallback ${name}:`, e?.message); }
+    }));
+  }
+
+  items.sort((a,b) => b.ts - a.ts);
+  if (items.length > 0) {
+    setCache('news', items);
+    setCache('news_last', items); // persist last-known separately (longer TTL)
+  }
+
+  // LAST RESORT: return last known news (up to 2h old) so feed never goes blank
+  if (items.length === 0) {
+    const lastKnown = getCached('news_last', 2*60*60*1000);
+    if (lastKnown) { console.warn('News: using last-known cached feed'); return lastKnown; }
+  }
+  return items;
+}
+
+// 10. ForexFactory — economic calendar (cached 1h)
+async function fetchCalendar() {
+  const cached = getCached('calendar', 15*60*1000);
+  if (cached) return cached;
+  const flags = {'USD':'🇺🇸','EUR':'🇪🇺','GBP':'🇬🇧','JPY':'🇯🇵','AUD':'🇦🇺','NZD':'🇳🇿','CAD':'🇨🇦','CNY':'🇨🇳','CHF':'🇨🇭'};
+  const CAL_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
+
+  // Try direct first (works if CORS allows), then proxy fallback
+  let raw = null;
+  try { raw = await fetchJSON(CAL_URL+'?v='+Date.now()); } catch {}
+  if (!Array.isArray(raw)) {
+    try { raw = await fetchViaProxy(CAL_URL); } catch {}
+  }
+  if (!Array.isArray(raw)) return [];
+
+  const now = new Date();
+  const result = raw
+    .filter(e=>e.impact==='High'||e.impact==='Medium')
+    .map(e=>{
+      const dt = new Date(e.date);
+      const msAway = dt-now;
+      const hAway  = Math.floor(msAway/3600000);
+      const mAway  = Math.floor((msAway%3600000)/60000);
+      let countdown='';
+      if(msAway>0) countdown = hAway>0 ? `${hAway}h ${Math.abs(mAway)}m` : `${mAway}m`;
+      const ccy = e.country||'USD';
+      return {
+        event:     e.title,
+        country:   ccy,
+        flag:      flags[ccy]||'🌐',
+        impact:    e.impact?.toLowerCase(),
+        time_awst: dt.toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour:'2-digit',minute:'2-digit',hour12:false}),
+        date_awst: dt.toLocaleDateString('en-AU',{timeZone:'Australia/Perth',day:'2-digit',month:'short'}),
+        forecast:  e.forecast||null,
+        previous:  e.previous||null,
+        actual:    e.actual||null,
+        countdown
+      };
+    });
+  setCache('calendar', result);
+  return result;
+}
+
+// 11. Next high-impact event alert (from calendar data)
+function buildAlert(cal) {
+  const bar = document.getElementById('alert-bar');
+  const next = cal.find(e=>e.impact==='high'&&e.countdown);
+  if (!next) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  document.getElementById('alert-text').textContent =
+    `${next.event} (${next.country}) at ${next.time_awst} AWST  ·  ${next.countdown} away`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+
+function renderCrypto(cryptoData, fundingRates) {
+  const prices = cryptoData.prices||{};
+  const global = cryptoData.global||{};
+  const coins  = [{sym:'BTC',name:'Bitcoin',ico:'ico-btc'},{sym:'ETH',name:'Ethereum',ico:'ico-eth'},{sym:'SOL',name:'Solana',ico:'ico-sol'},{sym:'HYPE',name:'Hyperliquid',ico:'ico-hype'}];
+  const html = coins.map(c=>{
+    const p = prices[c.sym]||{};
+    const fund = fundingRates?.[c.sym];
+    const chgCls = (p.change_24h||0)>=0?'pos':'neg';
+    const arrow  = (p.change_24h||0)>=0?'▲':'▼';
+    const fundHtml = fund!=null ? `<div class="cr-fund">Fund: ${fund>=0?'+':''}${fund.toFixed(4)}%</div>` : '';
+    return `<div class="cr-row">
+      <div class="cr-ico ${c.ico}">${c.sym}</div>
+      <div class="cr-info"><div class="cr-pair">${c.sym}/USDT</div><div class="cr-name">${c.name}</div></div>
+      <div class="cr-right">
+        <div class="cr-usd">$${fmtN(p.price, p.price>100?0:2)}</div>
+        <div class="cr-chg ${chgCls}">${arrow} ${Math.abs(p.change_24h||0).toFixed(2)}%</div>
+        ${fundHtml}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('crypto-rows').innerHTML = html;
+  document.getElementById('stat-mktcap').textContent = fmtBig(global.total_market_cap);
+  document.getElementById('stat-dom').textContent    = global.btc_dominance!=null ? global.btc_dominance.toFixed(1)+'%' : '—';
+  document.getElementById('stat-vol').textContent    = fmtBig(global.total_volume_24h);
+}
+
+function renderMS(ms) {
+  const html = ['BTC','ETH','SOL'].map(sym=>{
+    const d = ms[sym]; if(!d) return '';
+    const lp=d.long_pct||0, sp=d.short_pct||0;
+    const biasCls = d.bias==='LONG'?'ms-long':d.bias==='SHORT'?'ms-short':'';
+    return `<div class="ms-row">
+      <div class="ms-top"><span class="ms-name">${sym}</span><span class="ms-bias ${biasCls}">${d.bias}</span></div>
+      <div class="ms-bar"><div class="ms-bar-l" style="width:${lp}%"></div><div class="ms-bar-s" style="width:${sp}%"></div></div>
+      <div class="ms-meta">
+        <span class="ms-pct-l">${lp.toFixed(1)}% L</span>
+        <span class="ms-fund">Fund: ${d.funding_rate>=0?'+':''}${(d.funding_rate||0).toFixed(4)}%</span>
+        <span class="ms-pct-s">${sp.toFixed(1)}% S</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('ms-rows').innerHTML = html;
+}
+
+function renderFnG(fng) {
+  const v = fng.value||0;
+  let col = v<25?'#ff4455':v<45?'#f5a623':v<55?'#c9a84c':v<75?'#a0c840':'#00d97e';
+  document.getElementById('fng-num').textContent     = v;
+  document.getElementById('fng-num').style.color     = col;
+  document.getElementById('fng-label').textContent   = fng.label||'—';
+  document.getElementById('fng-label').style.color   = col;
+  document.getElementById('fng-yesterday').textContent = fng.yesterday||'—';
+  document.getElementById('fng-7d').textContent        = fng.avg_7d||'—';
+  const arcLen=126, filled=(v/100)*arcLen;
+  document.getElementById('fng-arc').setAttribute('stroke',col);
+  document.getElementById('fng-arc').setAttribute('stroke-dasharray',`${filled} ${arcLen-filled}`);
+  const angle=-90+(v/100)*180;
+  document.getElementById('fng-needle').setAttribute('transform',`rotate(${angle} 50 50)`);
+}
+
+function renderIndices(idx, ts) {
+  if (ts) document.getElementById('idx-upd').textContent = 'Updated '+ts;
+  ['us','asia','europe'].forEach(region=>{
+    const data = idx[region]||{};
+    const html = Object.entries(data).map(([name,v])=>{
+      if(!v||v.price==null) return '';
+      const chgCls = (v.change_pct||0)>=0?'pos':'neg';
+      return `<div class="idx-row">
+        <span class="idx-name">${name}</span>
+        <span class="idx-val">${fmtN(v.price,2)}</span>
+        <span class="idx-chg ${chgCls}">${fmtChg(v.change_pct)}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('idx-'+region).innerHTML = html||'<div style="padding:10px 12px;color:var(--dim);font-size:10px">Unavailable</div>';
+  });
+}
+
+function renderFOMC() {
+  // Always renders from hardcoded schedule — never depends on API
+  const today    = new Date().toISOString().slice(0,10);
+  const nextFomc = FOMC_DATES.find(d=>d>=today) || FOMC_DATES[FOMC_DATES.length-1];
+  const daysAway = Math.ceil((new Date(nextFomc)-new Date())/86400000);
+  const fomcFmt  = new Date(nextFomc+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('fomc-date').textContent = fomcFmt;
+  document.getElementById('fomc-days').textContent = daysAway+' days away';
+}
+
+function renderMacro(m, dxy) {
+  const dxyPrice = dxy?.price;
+  const dxyChg   = dxy?.change_pct;
+  document.getElementById('dxy-val').textContent = dxyPrice!=null ? fmtN(dxyPrice,2) : '—';
+  if (dxyChg!=null) document.getElementById('dxy-chg').innerHTML = chgHtml(dxyChg);
+  document.getElementById('fed-rate').textContent  = m.fed_rate!=null  ? m.fed_rate.toFixed(2)+'%' : '—';
+  document.getElementById('yield-2y').textContent  = m.yield_2y!=null  ? m.yield_2y.toFixed(2)+'%' : '—';
+  document.getElementById('yield-10y').textContent = m.yield_10y!=null ? m.yield_10y.toFixed(2)+'%' : '—';
+  if (m.yield_spread!=null) {
+    const sc = m.yield_inverted?'neg':'pos';
+    document.getElementById('yield-spread').innerHTML = `<span class="${sc}">${m.yield_spread>=0?'+':''}${m.yield_spread.toFixed(2)}%</span>`;
+  }
+  document.getElementById('cpi').textContent  = m.cpi_yoy!=null     ? m.cpi_yoy.toFixed(2)+'%' : '—';
+  document.getElementById('m2').textContent   = m.m2_billions!=null  ? '$'+(m.m2_billions/1000).toFixed(1)+'T' : '—';
+  document.getElementById('unemp').textContent= m.unemployment!=null ? m.unemployment.toFixed(1)+'%' : '—';
+}
+
+// A dead feed must LOOK dead. Empty string here is what hid the Stooq outage.
+function _feedDownRow(label) {
+  return `<div class="commod-row feed-down"><span class="commod-name">${label} feed returned no data</span><span class="commod-chg neg">DOWN</span></div>`;
+}
+
+function renderCommod(commod, fx) {
+  const cOrder = ['Gold','Silver','WTI Crude','Brent Crude','Copper','Natural Gas'];
+  const cHtml = cOrder.map(k=>{
+    const v=commod[k]; if(!v||v.price==null) return '';
+    const cls=(v.change_pct||0)>=0?'pos':'neg';
+    return `<div class="commod-row"><span class="commod-name">${k}</span><span class="commod-price">$${fmtN(v.price,v.price>100?2:4)}</span><span class="commod-chg ${cls}">${fmtChg(v.change_pct)}</span></div>`;
+  }).join('');
+  document.getElementById('commod-rows').innerHTML = cHtml || _feedDownRow('Commodities');
+
+  const fxOrder = ['AUD/USD','USD/JPY','EUR/USD','GBP/USD'];
+  const fHtml = fxOrder.map(k=>{
+    const v=fx[k]; if(!v||v.price==null) return '';
+    const cls=(v.change_pct||0)>=0?'pos':'neg';
+    return `<div class="commod-row"><span class="commod-name">${k}</span><span class="commod-price">${fmtN(v.price,4)}</span><span class="commod-chg ${cls}">${fmtChg(v.change_pct)}</span></div>`;
+  }).join('');
+  document.getElementById('fx-rows').innerHTML = fHtml || _feedDownRow('FX');
+}
+
+function renderNews(news, filter) {
+  const items = filter==='all' ? news : news.filter(n=>n.category===filter);
+  const html = items.slice(0,25).map(n=>{
+    const catCls = n.category==='crypto'?'cat-crypto':'cat-macro';
+    const safeUrl = n.url && n.url!=='#' ? n.url : '#';
+    return `<div class="news-item" onclick="window.open('${safeUrl}','_blank')">
+      <div class="news-top"><span class="news-src">${n.source}</span><span class="news-time">${n.time_awst} AWST</span></div>
+      <div class="news-hl">${n.headline}</div>
+      <span class="news-cat ${catCls}">${n.category.toUpperCase()}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('news-body').innerHTML = html || '<div style="padding:16px;color:var(--dim);font-size:10px;text-align:center">No articles found</div>';
+}
+
+function renderCal(cal, limit) {
+  const html = cal.slice(0,limit).map(e=>{
+    const dotCls = e.impact==='high'?'dot-high':e.impact==='medium'?'dot-med':'dot-low';
+    return `<div class="cal-row">
+      <span class="cal-time">${e.time_awst||''}</span>
+      <span class="cal-flag">${e.flag||'🌐'}</span>
+      <span class="cal-event">${e.event||''}</span>
+      <span class="cal-fc">${e.forecast||'—'}</span>
+      <span class="cal-prev">${e.previous||'—'}</span>
+      <div class="cal-dot ${dotCls}"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('cal-body').innerHTML = html || '<div style="padding:10px 12px;color:var(--dim);font-size:10px">No events found</div>';
+}
+
+function buildTicker(crypto, fx, commod, indices) {
+  const items = [];
+  // US indices
+  const us = indices?.us||{};
+  Object.entries(us).forEach(([k,v])=>{ if(v?.price) items.push({name:k,val:fmtN(v.price,2),chg:v.change_pct||0}); });
+  // DXY
+  const dxy = fx?.DXY;
+  if (dxy?.price) items.push({name:'DXY',val:fmtN(dxy.price,2),chg:dxy.change_pct||0});
+  // Gold + WTI
+  ['Gold','WTI Crude','Brent Crude'].forEach(k=>{
+    const v=commod[k]; if(v?.price) items.push({name:k==='WTI Crude'?'WTI':k==='Brent Crude'?'BRENT':k,val:'$'+fmtN(v.price,2),chg:v.change_pct||0});
+  });
+  // Crypto
+  const prices = crypto.prices||{};
+  ['BTC','ETH','SOL','HYPE'].forEach(sym=>{
+    const p=prices[sym]; if(p?.price) items.push({name:sym+'/USDT',val:'$'+fmtN(p.price,p.price>100?0:2),chg:p.change_24h||0});
+  });
+  const html = items.map(it=>{
+    const cls=it.chg>=0?'pos':'neg';
+    return `<div class="ti"><span class="ti-name">${it.name}</span><span class="ti-val">${it.val}</span><span class="ti-chg ${cls}">${it.chg>=0?'▲':'▼'} ${Math.abs(it.chg).toFixed(2)}%</span></div>`;
+  }).join('');
+  const track = document.getElementById('ticker-track');
+  track.innerHTML = html+html;
+}
+
+// ── TAB SWITCHERS ─────────────────────────────────────────────
+function switchIdx(region, el) {
+  document.querySelectorAll('.idx-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.idx-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('idx-'+region).classList.add('active');
+}
+function switchNews(filter, el) {
+  newsFilter=filter;
+  document.querySelectorAll('.news-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderNews(allNews, filter);
+}
+document.getElementById('cal-more-btn').onclick = function(){
+  calShown+=5;
+  renderCal(window._calData||[], calShown);
+};
+
+// ══════════════════════════════════════════════════════════════
+//  MAIN LOAD — Two-phase: fast sources first, slow Stooq second
+// ══════════════════════════════════════════════════════════════
+let _lastCryptoData = {prices:{},global:{}};
+let _lastFxData     = {};
+let _lastCommodData = {};
+let _lastIdxData    = {us:{},asia:{},europe:{}};
+
+// ── WHALE FLOW — OKX BTC Perps large trades (works from AU) ────
+async function fetchWhaleFlow() {
+  try {
+    const res = await fetch('http://localhost:8765/okx/api/v5/market/trades?instId=BTC-USDT-SWAP&limit=500');
+    if (!res.ok) throw new Error('OKX trades failed');
+    const json = await res.json();
+    const trades = json?.data || [];
+    if (!trades.length) throw new Error('No trade data from OKX');
+
+    const THRESHOLD = 100000; // $100K minimum — OKX sz is contracts, 1 contract = 0.01 BTC
+    let buyVol = 0, sellVol = 0;
+    const whales = [];
+
+    trades.forEach(t => {
+      const qty      = parseFloat(t.sz);
+      const price    = parseFloat(t.px);
+      const notional = qty * 0.01 * price; // OKX BTC-USDT-SWAP: 1 contract = 0.01 BTC
+      const isSell   = t.side === 'sell';
+      if (isSell) sellVol += notional; else buyVol += notional;
+      if (notional >= THRESHOLD) {
+        whales.push({ price, qty, notional, isSell, time: parseInt(t.ts) });
+      }
+    });
+
+    whales.sort((a, b) => b.notional - a.notional);
+
+    const fmtM = v => v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${(v/1e3).toFixed(0)}K`;
+
+    const totalFlow = buyVol + sellVol;
+    const buyPct = totalFlow > 0 ? (buyVol / totalFlow * 100) : 50;
+    const netBias = buyVol > sellVol ? `BUY +${fmtM(buyVol - sellVol)}` : `SELL +${fmtM(sellVol - buyVol)}`;
+
+    document.getElementById('whale-buy-vol').textContent  = fmtM(buyVol);
+    document.getElementById('whale-sell-vol').textContent = fmtM(sellVol);
+    document.getElementById('whale-bias-fill').style.width = `${buyPct.toFixed(1)}%`;
+    document.getElementById('whale-bias-fill').style.background = buyPct >= 50 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('whale-bias-label').textContent = netBias;
+    document.getElementById('whale-bias-label').style.color = buyPct >= 50 ? 'var(--green)' : 'var(--red)';
+
+    const rows = document.getElementById('whale-rows');
+    if (whales.length === 0) {
+      rows.innerHTML = '<div style="padding:8px 10px;font-size:9px;color:var(--dim2)">No trades ≥$100K in last 500</div>';
+    } else {
+      rows.innerHTML = whales.slice(0, 15).map(w => {
+        const side   = w.isSell ? 'SELL' : 'BUY';
+        const col    = w.isSell ? 'var(--red)' : 'var(--green)';
+        const t      = new Date(w.time);
+        const tStr   = t.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 10px;border-bottom:1px solid var(--border)">
+          <div style="font-size:9px;font-weight:700;color:${col};width:30px">${side}</div>
+          <div style="flex:1;font-size:9px;color:var(--text);font-weight:600">${fmtM(w.notional)}</div>
+          <div style="font-size:8px;color:var(--dim)">@$${Math.round(w.price).toLocaleString()}</div>
+          <div style="font-size:8px;color:var(--dim2)">${tStr}</div>
+        </div>`;
+      }).join('');
+    }
+
+    const now = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:false});
+    document.getElementById('whale-upd').textContent = `Updated ${now} AWST · ${whales.length} trades ≥$100K found`;
+  } catch(e) {
+    console.warn('Whale flow error:', e);
+    document.getElementById('whale-rows').innerHTML = '<div style="padding:8px 10px;font-size:9px;color:var(--dim2)">Whale data unavailable</div>';
+  }
+}
+
+// ── WATCHLIST — Futures, Bonds/Sectors, Stocks ───────────────────
+const WATCH_SYMS = {
+  futures: { 'NQ=F':'NASDAQ 100', 'ES=F':'S&P 500', 'YM=F':'DOW 30', 'RTY=F':'RUSSELL 2K' },
+  bonds:   { 'TLT':'20Y Bond ETF', '^TNX':'10Y Yield', 'XLF':'Financials', 'XLE':'Energy' },
+  stocks:  { 'AMZN':'Amazon', 'GOOG':'Alphabet', 'MSFT':'Microsoft', 'PLTR':'Palantir', 'BLK':'BlackRock' }
+};
+
+async function fetchWatchlist() {
+  try {
+    const cached = getCached('watchlist', 2*60*1000);
+    if (cached) { renderWatchlist(cached); return; }
+    const allSyms = [
+      ...Object.keys(WATCH_SYMS.futures),
+      ...Object.keys(WATCH_SYMS.bonds),
+      ...Object.keys(WATCH_SYMS.stocks)
+    ];
+    const data = await yahooQuotes(allSyms);
+    if (Object.keys(data).length > 0) {
+      setCache('watchlist', data);
+      renderWatchlist(data);
+    }
+  } catch(e) { console.warn('fetchWatchlist error:', e); }
+}
+
+function renderWatchlist(data) {
+  const ts = new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour:'2-digit',minute:'2-digit',hour12:false});
+  const upd = document.getElementById('watch-upd');
+  if (upd) upd.textContent = 'Updated '+ts;
+
+  function renderGroup(syms, elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.innerHTML = Object.entries(syms).map(([sym, label]) => {
+      const v = data[sym];
+      if (!v || v.price == null) return `<div class="idx-row"><span class="idx-name">${label}</span><span class="idx-val">—</span><span class="idx-chg" style="color:var(--dim)">—</span></div>`;
+      const chgCls = (v.change_pct || 0) >= 0 ? 'pos' : 'neg';
+      const price = sym === '^TNX'
+        ? v.price.toFixed(3) + '%'
+        : '$' + fmtN(v.price, v.price >= 100 ? 0 : 2);
+      return `<div class="idx-row">
+        <span class="idx-name">${label}</span>
+        <span class="idx-val">${price}</span>
+        <span class="idx-chg ${chgCls}">${fmtChg(v.change_pct)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  renderGroup(WATCH_SYMS.futures, 'watch-futures');
+  renderGroup(WATCH_SYMS.bonds,   'watch-bonds');
+  renderGroup(WATCH_SYMS.stocks,  'watch-stocks');
+}
+
+async function loadData() {
+  try {
+    const ts = new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour:'2-digit',minute:'2-digit',hour12:false});
+
+    // ── PHASE 1: Fast sources (crypto, sentiment, market structure, macro, news, cal)
+    const [crypto, fng, ms, fundingRates, macro, news, cal] = await Promise.allSettled([
+      fetchCrypto(),
+      fetchFnG(),
+      fetchMarketStructure(),
+      fetchFundingRates(),
+      fetchMacro(),
+      fetchNews(),
+      fetchCalendar()
+    ]);
+    fetchWhaleFlow();   // fire & forget — updates panel independently
+    fetchWatchlist();   // fire & forget — futures/bonds/stocks watchlist
+
+    const v = r => r.status==='fulfilled' ? r.value : null;
+
+    const cryptoData = v(crypto)       || {prices:{},global:{}};
+    const fngData    = v(fng)          || {value:0,label:'—',yesterday:0,avg_7d:0};
+    const msData     = v(ms)           || {};
+    const fundData   = v(fundingRates) || {};
+    const macroData  = v(macro)        || {};
+    const newsData   = v(news)         || [];
+    const calData    = v(cal)          || [];
+
+    window._calData = calData;
+    _lastCryptoData = cryptoData;
+
+    // Merge funding rates into crypto display
+    Object.keys(fundData).forEach(sym => {
+      if (cryptoData.prices[sym]) cryptoData.prices[sym].funding_rate = fundData[sym];
+    });
+
+    renderCrypto(cryptoData, fundData);
+    renderMS(msData);
+    renderFnG(fngData);
+    renderMacro(macroData, _lastFxData.DXY);
+    allNews = newsData;
+    renderNews(allNews, newsFilter);
+    renderCal(calData, calShown);
+    buildAlert(calData);
+
+    // ── PHASE 2: Yahoo — ONE batched call, all 22 symbols, fanned out server-side.
+    //    Cold load: ~2-3s (was ~25s on the old Stooq serial chain). Cache: instant.
+    let idxData = _lastIdxData, commodData = _lastCommodData, fxData = _lastFxData;
+    try {
+      const mkt = await fetchAllMarketData();
+      if (mkt.indices)     idxData    = mkt.indices;
+      if (mkt.commodities) commodData = mkt.commodities;
+      if (mkt.fx)          fxData     = mkt.fx;
+    } catch(e) { console.warn('fetchAllMarketData error:', e); }
+
+    // Preserve last good data
+    if (Object.keys(idxData.us||{}).length)    _lastIdxData   = idxData;
+    if (Object.keys(commodData||{}).length)    _lastCommodData= commodData;
+    if (Object.keys(fxData||{}).length)        _lastFxData    = fxData;
+
+    renderIndices(_lastIdxData, ts);
+    renderMacro(macroData, _lastFxData.DXY);  // re-render with DXY now available
+    renderCommod(_lastCommodData, _lastFxData);
+    buildTicker(_lastCryptoData, _lastFxData, _lastCommodData, _lastIdxData);
+
+  } catch(e) {
+    console.error('loadData error:', e);
+  }
+}
+
+// ── BOOT ──────────────────────────────────────────────────────
+renderFOMC();
+loadData();
+setInterval(loadData, 60000);  // refresh every 60s
+</script>
+</body>
+</html>
