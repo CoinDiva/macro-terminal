@@ -207,7 +207,7 @@ class Handler(SimpleHTTPRequestHandler):
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
             'Accept': 'application/rss+xml,application/xml,*/*'
         })
-        with urllib.request.urlopen(req, context=ctx, timeout=10) as resp:
+        with urllib.request.urlopen(req, context=ctx, timeout=8) as resp:
             raw = resp.read().decode('utf-8', errors='replace')
         root = ET.fromstring(raw)
         items = []
@@ -243,16 +243,33 @@ class Handler(SimpleHTTPRequestHandler):
         ]
         all_items = []
         seen = set()
-        for url, name, cat in feeds:
+        # Fetch all feeds in parallel. Serially, 6 feeds x up to 10s each ran past
+        # the browser's 12s limit and the whole news panel timed out (Sep 2026).
+        def _one(feed):
+            url, name, cat = feed
             try:
                 items = self._parse_rss(url, name, cat)
-                for it in items:
-                    if it['headline'] not in seen:
-                        seen.add(it['headline'])
-                        all_items.append(it)
-                print(f'  ✅ {name}: {len(items)} articles')
+                print(f'  News OK {name}: {len(items)} articles')
+                return items
             except Exception as e:
-                print(f'  ❌ {name} RSS: {e}')
+                print(f'  News FAILED {name}: {e}')
+                return []
+        # Hard 7s budget for the whole call. MarketWatch alone can take 11s+,
+        # which pushed /news past the browser's 12s limit. Slow feeds are skipped
+        # for this round and logged, not waited on.
+        from concurrent.futures import wait as _wait
+        pool = ThreadPoolExecutor(max_workers=len(feeds))
+        futs = {pool.submit(_one, f): f[1] for f in feeds}
+        done, late = _wait(futs, timeout=7)
+        pool.shutdown(wait=False)
+        for f in late:
+            print(f'  News SKIPPED {futs[f]}: slower than 7s')
+        results = [f.result() for f in done]
+        for items in results:
+            for it in items:
+                if it['headline'] not in seen:
+                    seen.add(it['headline'])
+                    all_items.append(it)
         # Sort by timestamp descending
         all_items.sort(key=lambda x: x.get('ts',0), reverse=True)
         data = json.dumps(all_items[:50]).encode()
@@ -435,6 +452,11 @@ class Handler(SimpleHTTPRequestHandler):
     RELAY_HOSTS = ('api.stlouisfed.org', 'nfs.faireconomy.media', 'bitcoinmagazine.com',
                    'cointelegraph.com', 'decrypt.co', 'marketwatch.com')
 
+    # Short server-side cache. ForexFactory rate-limits hard (HTTP 429), and every
+    # browser refresh used to hit it again. Stale copies are served if upstream fails.
+    _RELAY_CACHE = {}
+    RELAY_TTL = {'nfs.faireconomy.media': 900}   # seconds; everything else uses 120
+
     def _relay(self):
         """Generic CORS relay: /relay?url=<full https url>. Allowlisted hosts only."""
         target = self.path.split('url=', 1)[1] if 'url=' in self.path else ''
@@ -448,6 +470,15 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({'error': f'host not allowed: {host}'}).encode())
             return
+        import time
+        cached = self._RELAY_CACHE.get(target)
+        if cached and time.time() - cached[0] < self.RELAY_TTL.get(host, 120):
+            self.send_response(200)
+            self.send_header('Content-Type', cached[2])
+            self._cors()
+            self.end_headers()
+            self.wfile.write(cached[1])
+            return
         try:
             req = urllib.request.Request(target, headers={
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -456,6 +487,7 @@ class Handler(SimpleHTTPRequestHandler):
             with urllib.request.urlopen(req, context=ssl.create_default_context(), timeout=15) as resp:
                 data  = resp.read()
                 ctype = resp.headers.get('Content-Type', 'application/octet-stream')
+            self._RELAY_CACHE[target] = (time.time(), data, ctype)
             self.send_response(200)
             self.send_header('Content-Type', ctype)
             self._cors()
@@ -464,6 +496,15 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception as e:
             code = getattr(e, 'code', 502)
             print(f'Relay → FAILED {host}: {e}')
+            if cached:
+                print(f'Relay → serving STALE copy for {host} ({int(time.time() - cached[0])}s old)')
+                self.send_response(200)
+                self.send_header('Content-Type', cached[2])
+                self.send_header('X-Relay-Stale', '1')
+                self._cors()
+                self.end_headers()
+                self.wfile.write(cached[1])
+                return
             self.send_response(code if isinstance(code, int) else 502)
             self.send_header('Content-Type', 'application/json')
             self._cors()

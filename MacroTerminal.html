@@ -386,7 +386,10 @@ body{font-family:'Courier New',Consolas,monospace;background:var(--bg);color:var
 
 const FRED_KEY    = window.CONFIG?.FRED_KEY    || '';
 const REUTERS_KEY = window.CONFIG?.REUTERS_KEY || '';
-const PROXY       = '/relay?url=';  // own server.py relay; corsproxy.io went key-only Sep 2026
+const PROXY       = '/relay?url=';
+// Reuters Connect returns 403 on every auth format (see STATUS.md). Disabled so it
+// stops costing a 10s timeout on every load. Set true once a working key exists.
+const REUTERS_ENABLED = false;  // own server.py relay; corsproxy.io went key-only Sep 2026
 
 if (!window.CONFIG) {
   console.error('config.js did not load — is server.py running on :8765? Opening this file directly with file:// will not work.');
@@ -911,7 +914,7 @@ function pushNewsItem(items, raw, source, category) {
 }
 
 // 9. News — Reuters · Messari · CryptoCompare · CoinDesk
-// Parse an RSS feed fetched via corsproxy.io fallback
+// Parse an RSS feed fetched via the server's /relay fallback
 async function _parseRSSFallback(url, source, category) {
   const r = await fetch(PROXY + url, { signal: AbortSignal.timeout(10000) });
   if (!r.ok) throw new Error(r.status);
@@ -938,8 +941,8 @@ async function fetchNews() {
   const items = [];
   const seenHeadlines = new Set();
 
-  // --- SOURCE 1: Reuters via local Python proxy ---
-  try {
+  // --- SOURCE 1: Reuters via local Python proxy (disabled while 403) ---
+  if (REUTERS_ENABLED) try {
     const r = await fetch('http://localhost:8765/reuters?q=bitcoin+crypto+federal+reserve+economy+markets&limit=40', {
       signal: AbortSignal.timeout(10000)
     });
@@ -979,9 +982,9 @@ async function fetchNews() {
     }
   } catch(e) { console.warn('RSS news (local) failed:', e?.message); }
 
-  // --- SOURCE 3: Direct RSS fallback via corsproxy.io (kicks in when server is down) ---
+  // --- SOURCE 3: Per-feed RSS fallback via /relay (kicks in when /news returns too little) ---
   if (items.length < 5) {
-    console.warn('News: local server down — fetching RSS direct via corsproxy.io');
+    console.warn('News: /news returned too few items, fetching feeds individually via /relay');
     const feeds = [
       ['https://cointelegraph.com/rss',             'CoinTelegraph', 'crypto'],
       ['https://decrypt.co/feed',                   'Decrypt',       'crypto'],
@@ -1028,7 +1031,13 @@ async function fetchCalendar() {
   if (!Array.isArray(raw)) {
     try { raw = await fetchViaProxy(CAL_URL); } catch {}
   }
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw)) {
+    // Make the outage visible instead of showing an innocent "No events found".
+    console.error('Economic calendar feed DOWN: ForexFactory unreachable or rate-limited (HTTP 429)');
+    window._calDown = true;
+    return [];
+  }
+  window._calDown = false;
 
   const now = new Date();
   const result = raw
@@ -1225,7 +1234,9 @@ function renderCal(cal, limit) {
       <div class="cal-dot ${dotCls}"></div>
     </div>`;
   }).join('');
-  document.getElementById('cal-body').innerHTML = html || '<div style="padding:10px 12px;color:var(--dim);font-size:10px">No events found</div>';
+  document.getElementById('cal-body').innerHTML = html || (window._calDown
+    ? '<div style="padding:10px 12px;color:#e05252;font-size:10px">DOWN: calendar feed unreachable, retrying every 60s</div>'
+    : '<div style="padding:10px 12px;color:var(--dim);font-size:10px">No events found</div>');
 }
 
 function buildTicker(crypto, fx, commod, indices) {
@@ -1400,14 +1411,19 @@ async function loadData() {
   try {
     const ts = new Date().toLocaleTimeString('en-AU',{timeZone:'Australia/Perth',hour:'2-digit',minute:'2-digit',hour12:false});
 
-    // ── PHASE 1: Fast sources (crypto, sentiment, market structure, macro, news, cal)
-    const [crypto, fng, ms, fundingRates, macro, news, cal] = await Promise.allSettled([
+    // News loads on its own track. It used to sit inside Phase 1, so every panel
+    // waited on the slowest RSS feed (about 50s cold load, Sep 2026).
+    fetchNews()
+      .then(n => { allNews = n || []; renderNews(allNews, newsFilter); })
+      .catch(e => console.error('News load failed:', e));
+
+    // ── PHASE 1: Fast sources (crypto, sentiment, market structure, macro, cal)
+    const [crypto, fng, ms, fundingRates, macro, cal] = await Promise.allSettled([
       fetchCrypto(),
       fetchFnG(),
       fetchMarketStructure(),
       fetchFundingRates(),
       fetchMacro(),
-      fetchNews(),
       fetchCalendar()
     ]);
     fetchWhaleFlow();   // fire & forget — updates panel independently
@@ -1420,7 +1436,6 @@ async function loadData() {
     const msData     = v(ms)           || {};
     const fundData   = v(fundingRates) || {};
     const macroData  = v(macro)        || {};
-    const newsData   = v(news)         || [];
     const calData    = v(cal)          || [];
 
     window._calData = calData;
@@ -1435,8 +1450,6 @@ async function loadData() {
     renderMS(msData);
     renderFnG(fngData);
     renderMacro(macroData, _lastFxData.DXY);
-    allNews = newsData;
-    renderNews(allNews, newsFilter);
     renderCal(calData, calShown);
     buildAlert(calData);
 

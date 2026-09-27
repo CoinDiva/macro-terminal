@@ -2,7 +2,7 @@
 
 A single-screen macroeconomic and crypto intelligence terminal. Aggregates 20+ live data feeds across traditional finance and digital assets into one Bloomberg-style dashboard, built to answer one question at a glance: **what is the macro backdrop doing to risk assets right now?**
 
-![Macro Terminal](docs_dashboard.jpg)
+![Macro Terminal](docs_dashboard_hires.jpg)
 
 Built and maintained by **Beth Silverberg** ([@CoinDiva](https://github.com/CoinDiva)).
 
@@ -96,13 +96,15 @@ Two changes came out of that:
 
 ---
 
+**Slow feeds must not block fast ones.** Also in September 2026, a cold load took about 50 seconds. The news panel sat inside the same wait as every other panel, and its sources ran one after another: a Reuters endpoint that always failed after a 10-second timeout, then six RSS feeds fetched serially on the server. News now loads on its own track, the server fetches all feeds in parallel, and the broken Reuters source sits behind a `REUTERS_ENABLED` flag instead of costing every user 10 seconds.
+
 **Own the dependency, or it owns you.** In September 2026 every FRED field and the economic calendar went blank at once. Correlating by source again pointed away from the display: both relied on a free public CORS relay as a fallback, and that relay had switched to paid-only access. The fix was a small allowlisted `/relay` route inside `server.py`, which removed the third-party dependency entirely. The relay only forwards to named hosts and logs every refused or failed request.
 
 ---
 
 ## Known issues
 
-- **Reuters Connect returns 403** on every auth format tried. Suspected OAuth2 client_secret requirement. News currently falls back to RSS.
+- **Reuters Connect returns 403** on every auth format tried (suspected OAuth2 client_secret requirement). It is disabled with `REUTERS_ENABLED = false`; news runs on six RSS feeds.
 - **DXY has an approximation fallback.** If Yahoo's `DX-Y.NYB` fails, DXY is derived from EUR/USD and flagged `derived: true`. It is an estimate, not the real index.
 - Index and futures data carry a 15-minute delay, as labeled in the UI.
 
